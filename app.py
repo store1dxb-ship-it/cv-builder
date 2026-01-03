@@ -2,24 +2,25 @@ import streamlit as st
 from fpdf import FPDF
 import google.generativeai as genai
 
-# ================== 1. AI CONFIG (TEMP TESTING) ==================
+# ================== AI CONFIG (FIXED) ==================
 API_KEY = "AIzaSyBnzIDq_M918jBKRIerScQfOefHDO9J-VM"
 genai.configure(api_key=API_KEY)
 
-ai_model = genai.GenerativeModel("models/gemini-1.5-pro")
+# ✅ MOST STABLE MODEL (v1beta compatible)
+ai_model = genai.GenerativeModel("gemini-1.0-pro")
 
 
 def get_ai_suggestions(role, info_type="summary"):
     try:
         if info_type == "summary":
             prompt = f"""
-            Write a professional, ATS-friendly 2–3 line resume summary
-            for a {role}.
+            Write a professional, ATS-friendly resume summary
+            (2–3 lines) for a {role}.
             """
         else:
             prompt = f"""
             Write 4 strong bullet points for work experience
-            of a {role}.
+            of a {role}. Use achievements and action verbs.
             """
 
         response = ai_model.generate_content(prompt)
@@ -29,7 +30,7 @@ def get_ai_suggestions(role, info_type="summary"):
         return f"AI ERROR: {str(e)}"
 
 
-# ================== 2. PAGE CONFIG ==================
+# ================== PAGE CONFIG ==================
 st.set_page_config(page_title="AI CV Builder", layout="wide")
 
 if "step" not in st.session_state:
@@ -38,7 +39,7 @@ if "user_data" not in st.session_state:
     st.session_state.user_data = {}
 
 
-# ================== 3. PDF GENERATOR ==================
+# ================== PDF GENERATOR ==================
 def create_pdf(data):
     pdf = FPDF()
     pdf.add_page()
@@ -68,7 +69,7 @@ def create_pdf(data):
     return pdf.output(dest="S").encode("latin-1")
 
 
-# ================== 4. UI FLOW ==================
+# ================== UI FLOW ==================
 if st.session_state.step == 1:
     st.title("👤 Step 1: Personal Details")
 
@@ -80,7 +81,7 @@ if st.session_state.step == 1:
             st.session_state.step = 2
             st.rerun()
         else:
-            st.error("Name aur Job Role dono bharo")
+            st.error("Please enter Name and Job Role")
 
 
 elif st.session_state.step == 2:
@@ -92,16 +93,25 @@ elif st.session_state.step == 2:
 
     with col1:
         if st.button("✨ Generate Summary"):
-            with st.spinner("AI summary generate ho rahi hai..."):
+            with st.spinner("Generating summary..."):
                 st.session_state.user_data["summary"] = get_ai_suggestions(role, "summary")
 
     with col2:
         if st.button("✨ Generate Experience"):
-            with st.spinner("AI experience generate ho raha hai..."):
+            with st.spinner("Generating experience..."):
                 st.session_state.user_data["experience"] = get_ai_suggestions(role, "exp")
 
-    summary = st.text_area("Summary", st.session_state.user_data.get("summary", ""), height=120)
-    experience = st.text_area("Experience", st.session_state.user_data.get("experience", ""), height=180)
+    summary = st.text_area(
+        "Summary",
+        st.session_state.user_data.get("summary", ""),
+        height=120
+    )
+
+    experience = st.text_area(
+        "Experience",
+        st.session_state.user_data.get("experience", ""),
+        height=180
+    )
 
     if st.button("Next ➡️"):
         st.session_state.user_data.update({
