@@ -1,13 +1,13 @@
 import streamlit as st
 from fpdf import FPDF
-import google.generativeai as genai
+from google import genai
 
-# ================= AI CONFIG (FINAL FIX) =================
-API_KEY = "AIzaSyBnzIDq_M918jBKRIerScQfOefHDO9J-VM"
-genai.configure(api_key=API_KEY)
+# ================= AI CONFIG (NEW SDK) =================
+client = genai.Client(
+    api_key="AIzaSyBnzIDq_M918jBKRIerScQfOefHDO9J-VM"
+)
 
-# ✅ ONLY WORKING MODEL WITH v1beta SDK
-ai_model = genai.GenerativeModel("gemini-pro")
+MODEL = "gemini-2.0-flash"   # ✅ CURRENTLY SUPPORTED
 
 
 def get_ai_suggestions(role, info_type="summary"):
@@ -17,7 +17,11 @@ def get_ai_suggestions(role, info_type="summary"):
         else:
             prompt = f"Write 4 strong resume bullet points for work experience of a {role}."
 
-        response = ai_model.generate_content(prompt)
+        response = client.models.generate_content(
+            model=MODEL,
+            contents=prompt
+        )
+
         return response.text.strip()
 
     except Exception as e:
