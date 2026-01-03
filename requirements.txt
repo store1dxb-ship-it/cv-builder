@@ -1,5 +1,5 @@
 streamlit
+google-generativeai
 xhtml2pdf
 Pillow
 PyPDF2
-google-generativeai
