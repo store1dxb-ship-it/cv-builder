@@ -3,7 +3,6 @@ from fpdf import FPDF
 import google.generativeai as genai
 
 # ===== 1. AI Configuration =====
-# Note: Ensure this key is active and has Gemini API access
 API_KEY = "AIzaSyBnzIDq_M918jBKRIerScQfOefHDO9J-VM"
 genai.configure(api_key=API_KEY)
 ai_model = genai.GenerativeModel('gemini-pro')
@@ -18,7 +17,6 @@ def get_ai_suggestions(role, info_type="summary"):
         response = ai_model.generate_content(prompt)
         return response.text
     except Exception as e:
-        # Yeh line aapko screen par asli error dikhayegi debugging ke liye
         return f"Developer Error: {str(e)}"
 
 # ===== 2. Page Styling =====
@@ -91,12 +89,16 @@ def create_pdf(data, style):
 # ===== 4. UI Flow =====
 if st.session_state.step == 1:
     st.title("👤 Step 1: Personal Details")
-    st.session_state.user_data['name'] = st.text_input("Full Name", value=st.session_state.user_state.get('name', ''))
+    # YAHAN SUDHAAR KIYA GAYA HAI: user_state ko user_data kiya gaya
+    st.session_state.user_data['name'] = st.text_input("Full Name", value=st.session_state.user_data.get('name', ''))
     st.session_state.user_data['role'] = st.text_input("Target Job Role", value=st.session_state.user_data.get('role', ''))
+    
     if st.button("Next ➡️"):
         if st.session_state.user_data['name'] and st.session_state.user_data['role']:
-            st.session_state.step = 2; st.rerun()
-        else: st.error("Please fill Name and Job Role")
+            st.session_state.step = 2
+            st.rerun()
+        else:
+            st.error("Please fill Name and Job Role")
 
 elif st.session_state.step == 2:
     st.title("🤖 Step 2: AI Suggestions")
@@ -120,8 +122,8 @@ elif st.session_state.step == 2:
 
 elif st.session_state.step == 3:
     st.title("🎓 Step 3: Skills & Education")
-    edu = st.text_area("Education")
-    skills = st.text_area("Skills")
+    edu = st.text_area("Education", value=st.session_state.user_data.get('education', ''))
+    skills = st.text_area("Skills", value=st.session_state.user_data.get('skills', ''))
     col1, col2 = st.columns(2)
     if col1.button("Back"): st.session_state.step = 2; st.rerun()
     if col2.button("Show Templates 🎨"):
@@ -135,9 +137,8 @@ elif st.session_state.step == 4:
     for i, t in enumerate(templates):
         with cols[i%3]:
             st.markdown('<div class="template-card">', unsafe_allow_html=True)
-            # Yahan images ke liye placeholder hai
-            st.image(f"https://via.placeholder.com/200x250.png?text={t}")
-            if st.button(f"Use {t}"):
+            st.image(f"https://via.placeholder.com/200x250.png?text={t.replace(' ', '+')}")
+            if st.button(f"Use {t}", key=f"btn_{t}"):
                 st.session_state.style = t; st.session_state.step = 5; st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
@@ -145,5 +146,8 @@ elif st.session_state.step == 5:
     st.title("✅ Ready!")
     pdf_bytes = create_pdf(st.session_state.user_data, st.session_state.style)
     st.download_button("📥 Download PDF", data=pdf_bytes, file_name="Resume.pdf", use_container_width=True)
-    if st.button("Restart"): st.session_state.step = 1; st.rerun()
-
+    if st.button("Restart 🔄"):
+        st.session_state.step = 1
+        st.session_state.user_data = {}
+        st.rerun()
+                                                                          
