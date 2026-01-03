@@ -2,27 +2,32 @@ import streamlit as st
 from fpdf import FPDF
 import google.generativeai as genai
 
-# ===== 1. AI Configuration (The Fixed Part) =====
+# ===== 1. AI Configuration (The Permanent Fix) =====
 API_KEY = "AIzaSyBnzIDq_M918jBKRIerScQfOefHDO9J-VM"
-genai.configure(api_key=API_KEY)
 
-# Use simple model name without version prefixes for better compatibility
-# gemini-1.5-flash sabse stable aur fast hai
-ai_model = genai.GenerativeModel('gemini-1.5-flash')
+# Configure with explicit API version to avoid v1beta 404 error
+genai.configure(api_key=API_KEY, transport='rest') 
 
 def get_ai_suggestions(role, info_type="summary"):
     try:
+        # Stable model name
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        
         if info_type == "summary":
             prompt = f"Write a professional 2-line resume summary for a {role}."
         else:
             prompt = f"Write 4 professional bullet points for work experience of a {role} role."
         
-        # Generation request
-        response = ai_model.generate_content(prompt)
+        response = model.generate_content(prompt)
         return response.text
     except Exception as e:
-        # Detailed error for debugging
-        return f"AI Error: Please check if API key is active. (Details: {str(e)})"
+        # Agar ye fail hota hai, toh hum 'gemini-pro' try karenge as fallback
+        try:
+            model_fallback = genai.GenerativeModel('gemini-pro')
+            response = model_fallback.generate_content(prompt)
+            return response.text
+        except:
+            return f"AI Error: API limit ya connectivity issue ho sakta hai. Details: {str(e)}"
 
 # ===== 2. Page Styling =====
 st.set_page_config(page_title="AI CV Builder", layout="wide")
@@ -38,7 +43,7 @@ st.markdown("""
         margin-bottom: 20px;
     }
     .template-card:hover { border-color: #007bff; transform: scale(1.02); transition: 0.3s; }
-    .stButton>button { width: 100%; border-radius: 8px; font-weight: bold; }
+    .stButton>button { width: 100%; border-radius: 8px; font-weight: bold; background-color: #007bff; color: white; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -96,7 +101,7 @@ def create_pdf(data, style):
 if st.session_state.step == 1:
     st.title("👤 Step 1: Personal Details")
     st.session_state.user_data['name'] = st.text_input("Full Name", value=st.session_state.user_data.get('name', ''))
-    st.session_state.user_data['role'] = st.text_input("Target Job Role", value=st.session_state.user_data.get('role', ''))
+    st.session_state.user_data['role'] = st.text_input("Target Job Role (e.g. Data Scientist)", value=st.session_state.user_data.get('role', ''))
     
     if st.button("Next ➡️"):
         if st.session_state.user_data['name'] and st.session_state.user_data['role']:
@@ -105,21 +110,18 @@ if st.session_state.step == 1:
             st.error("Please fill Name and Job Role")
 
 elif st.session_state.step == 2:
-    st.title("🤖 Step 2: AI Suggestions")
+    st.title("🤖 Step 2: AI Content")
     role = st.session_state.user_data['role']
     
-    col_ai1, col_ai2 = st.columns(2)
-    with col_ai1:
-        if st.button("✨ Magic: Generate AI Summary"):
-            with st.spinner("AI is thinking..."):
-                st.session_state.user_data['summary'] = get_ai_suggestions(role, "summary")
+    if st.button("✨ Generate AI Summary"):
+        with st.spinner("Gemini is thinking..."):
+            st.session_state.user_data['summary'] = get_ai_suggestions(role, "summary")
     
     summary = st.text_area("Summary", value=st.session_state.user_data.get('summary', ''), height=150)
     
-    with col_ai2:
-        if st.button("✨ Magic: Generate Experience"):
-            with st.spinner("AI is thinking..."):
-                st.session_state.user_data['experience'] = get_ai_suggestions(role, "exp")
+    if st.button("✨ Generate AI Experience"):
+        with st.spinner("Gemini is thinking..."):
+            st.session_state.user_data['experience'] = get_ai_suggestions(role, "exp")
                 
     exp = st.text_area("Experience", value=st.session_state.user_data.get('experience', ''), height=200)
     
@@ -130,7 +132,7 @@ elif st.session_state.step == 2:
         st.session_state.step = 3; st.rerun()
 
 elif st.session_state.step == 3:
-    st.title("🎓 Step 3: Skills & Education")
+    st.title("🎓 Step 3: Education & Skills")
     edu = st.text_area("Education", value=st.session_state.user_data.get('education', ''))
     skills = st.text_area("Skills", value=st.session_state.user_data.get('skills', ''))
     col1, col2 = st.columns(2)
@@ -143,7 +145,6 @@ elif st.session_state.step == 4:
     st.title("🎨 Select Template")
     cols = st.columns(3)
     
-    # Real looking template images (Sample links)
     template_data = [
         {"name": "Modern Blue", "img": "https://img.freepik.com/free-vector/modern-resume-template_23-2147829285.jpg"},
         {"name": "Classic Black", "img": "https://img.freepik.com/free-vector/professional-resume-template-minimalist-style_23-2148386443.jpg"},
@@ -155,17 +156,17 @@ elif st.session_state.step == 4:
     for i, t in enumerate(template_data):
         with cols[i%3]:
             st.markdown('<div class="template-card">', unsafe_allow_html=True)
-            st.image(t["img"], caption=t["name"], use_container_width=True)
-            if st.button(f"Choose {t['name']}", key=f"btn_{t['name']}"):
+            st.image(t["img"], use_container_width=True)
+            if st.button(f"Select {t['name']}", key=f"btn_{t['name']}"):
                 st.session_state.style = t["name"]; st.session_state.step = 5; st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
 
 elif st.session_state.step == 5:
-    st.title("✅ Your CV is Ready!")
+    st.title("✅ Final Step")
     pdf_bytes = create_pdf(st.session_state.user_data, st.session_state.style)
-    st.download_button("📥 DOWNLOAD PDF", data=pdf_bytes, file_name="My_Resume.pdf", use_container_width=True)
-    if st.button("Create Another 🔄"):
+    st.download_button("📥 DOWNLOAD MY CV", data=pdf_bytes, file_name="My_Resume.pdf", use_container_width=True)
+    if st.button("Start Again 🔄"):
         st.session_state.step = 1
         st.session_state.user_data = {}
         st.rerun()
-    
+        
