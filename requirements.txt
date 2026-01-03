@@ -1,2 +1,5 @@
 streamlit
-fpdf
+xhtml2pdf
+Pillow
+PyPDF2
+google-generativeai
