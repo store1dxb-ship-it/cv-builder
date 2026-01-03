@@ -3,7 +3,9 @@ from fpdf import FPDF
 import google.generativeai as genai
 
 # ===== 1. AI Configuration =====
-genai.configure(api_key="AIzaSyBnzIDq_M918jBKRIerScQfOefHDO9J-VM")
+# Note: Ensure this key is active and has Gemini API access
+API_KEY = "AIzaSyBnzIDq_M918jBKRIerScQfOefHDO9J-VM"
+genai.configure(api_key=API_KEY)
 ai_model = genai.GenerativeModel('gemini-pro')
 
 def get_ai_suggestions(role, info_type="summary"):
@@ -12,10 +14,12 @@ def get_ai_suggestions(role, info_type="summary"):
             prompt = f"Write a professional 2-line resume summary for a {role}."
         else:
             prompt = f"Write 4 professional bullet points for work experience of a {role}."
+        
         response = ai_model.generate_content(prompt)
         return response.text
-    except:
-        return "AI suggestion currently unavailable."
+    except Exception as e:
+        # Yeh line aapko screen par asli error dikhayegi debugging ke liye
+        return f"Developer Error: {str(e)}"
 
 # ===== 2. Page Styling =====
 st.set_page_config(page_title="AI CV Builder", layout="wide")
@@ -69,10 +73,11 @@ def create_pdf(data, style):
 
     pdf.set_text_color(0, 0, 0)
     pdf.set_y(50 if style != "Creative Sidebar" else 20)
-    if style == "Creative Sidebar": pdf.set_x(70)
+    
+    sections = [("Summary", data.get('summary')), ("Experience", data.get('experience')), 
+               ("Education", data.get('education')), ("Skills", data.get('skills'))]
 
-    for title, content in [("Summary", data.get('summary')), ("Experience", data.get('experience')), 
-                           ("Education", data.get('education')), ("Skills", data.get('skills'))]:
+    for title, content in sections:
         if content and content.strip():
             if style == "Creative Sidebar": pdf.set_x(70)
             pdf.set_font("Arial", 'B', 12)
@@ -86,7 +91,7 @@ def create_pdf(data, style):
 # ===== 4. UI Flow =====
 if st.session_state.step == 1:
     st.title("👤 Step 1: Personal Details")
-    st.session_state.user_data['name'] = st.text_input("Full Name", value=st.session_state.user_data.get('name', ''))
+    st.session_state.user_data['name'] = st.text_input("Full Name", value=st.session_state.user_state.get('name', ''))
     st.session_state.user_data['role'] = st.text_input("Target Job Role", value=st.session_state.user_data.get('role', ''))
     if st.button("Next ➡️"):
         if st.session_state.user_data['name'] and st.session_state.user_data['role']:
@@ -98,12 +103,14 @@ elif st.session_state.step == 2:
     role = st.session_state.user_data['role']
     
     if st.button("✨ Magic: Generate AI Summary"):
-        st.session_state.user_data['summary'] = get_ai_suggestions(role, "summary")
-    summary = st.text_area("Summary", value=st.session_state.user_data.get('summary', ''))
+        with st.spinner("AI is thinking..."):
+            st.session_state.user_data['summary'] = get_ai_suggestions(role, "summary")
+    summary = st.text_area("Summary", value=st.session_state.user_data.get('summary', ''), height=150)
     
     if st.button("✨ Magic: Generate Experience"):
-        st.session_state.user_data['experience'] = get_ai_suggestions(role, "exp")
-    exp = st.text_area("Experience", value=st.session_state.user_data.get('experience', ''))
+        with st.spinner("AI is thinking..."):
+            st.session_state.user_data['experience'] = get_ai_suggestions(role, "exp")
+    exp = st.text_area("Experience", value=st.session_state.user_data.get('experience', ''), height=200)
     
     col1, col2 = st.columns(2)
     if col1.button("Back"): st.session_state.step = 1; st.rerun()
@@ -115,7 +122,9 @@ elif st.session_state.step == 3:
     st.title("🎓 Step 3: Skills & Education")
     edu = st.text_area("Education")
     skills = st.text_area("Skills")
-    if st.button("Show Templates 🎨"):
+    col1, col2 = st.columns(2)
+    if col1.button("Back"): st.session_state.step = 2; st.rerun()
+    if col2.button("Show Templates 🎨"):
         st.session_state.user_data.update({"education": edu, "skills": skills})
         st.session_state.step = 4; st.rerun()
 
@@ -126,7 +135,8 @@ elif st.session_state.step == 4:
     for i, t in enumerate(templates):
         with cols[i%3]:
             st.markdown('<div class="template-card">', unsafe_allow_html=True)
-            st.image(f"https://via.placeholder.com/200x250.png?text={t}") # Replace with real imgs
+            # Yahan images ke liye placeholder hai
+            st.image(f"https://via.placeholder.com/200x250.png?text={t}")
             if st.button(f"Use {t}"):
                 st.session_state.style = t; st.session_state.step = 5; st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
@@ -136,4 +146,4 @@ elif st.session_state.step == 5:
     pdf_bytes = create_pdf(st.session_state.user_data, st.session_state.style)
     st.download_button("📥 Download PDF", data=pdf_bytes, file_name="Resume.pdf", use_container_width=True)
     if st.button("Restart"): st.session_state.step = 1; st.rerun()
-        
+
