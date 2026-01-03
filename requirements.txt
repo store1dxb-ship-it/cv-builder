@@ -1,3 +1,3 @@
 streamlit
 fpdf
-google-generativeai
+google-generativeai>=0.7.2
