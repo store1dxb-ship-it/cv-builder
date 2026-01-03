@@ -2,10 +2,12 @@ import streamlit as st
 from fpdf import FPDF
 import google.generativeai as genai
 
-# ===== 1. AI Configuration =====
+# ===== 1. AI Configuration (Model Name Updated) =====
 API_KEY = "AIzaSyBnzIDq_M918jBKRIerScQfOefHDO9J-VM"
 genai.configure(api_key=API_KEY)
-ai_model = genai.GenerativeModel('gemini-pro')
+
+# 'gemini-pro' ki jagah 'gemini-1.5-flash' use kar rahe hain jo ki stable hai
+ai_model = genai.GenerativeModel('gemini-1.5-flash')
 
 def get_ai_suggestions(role, info_type="summary"):
     try:
@@ -30,6 +32,7 @@ st.markdown("""
         padding: 15px;
         text-align: center;
         background-color: #ffffff;
+        margin-bottom: 20px;
     }
     .template-card:hover { border-color: #007bff; transform: scale(1.02); transition: 0.3s; }
     .stButton>button { width: 100%; border-radius: 8px; font-weight: bold; }
@@ -89,14 +92,12 @@ def create_pdf(data, style):
 # ===== 4. UI Flow =====
 if st.session_state.step == 1:
     st.title("👤 Step 1: Personal Details")
-    # YAHAN SUDHAAR KIYA GAYA HAI: user_state ko user_data kiya gaya
     st.session_state.user_data['name'] = st.text_input("Full Name", value=st.session_state.user_data.get('name', ''))
     st.session_state.user_data['role'] = st.text_input("Target Job Role", value=st.session_state.user_data.get('role', ''))
     
     if st.button("Next ➡️"):
         if st.session_state.user_data['name'] and st.session_state.user_data['role']:
-            st.session_state.step = 2
-            st.rerun()
+            st.session_state.step = 2; st.rerun()
         else:
             st.error("Please fill Name and Job Role")
 
@@ -137,7 +138,8 @@ elif st.session_state.step == 4:
     for i, t in enumerate(templates):
         with cols[i%3]:
             st.markdown('<div class="template-card">', unsafe_allow_html=True)
-            st.image(f"https://via.placeholder.com/200x250.png?text={t.replace(' ', '+')}")
+            # Preview Image Placeholder
+            st.image(f"https://via.placeholder.com/250x300.png?text={t.replace(' ', '+')}")
             if st.button(f"Use {t}", key=f"btn_{t}"):
                 st.session_state.style = t; st.session_state.step = 5; st.rerun()
             st.markdown('</div>', unsafe_allow_html=True)
@@ -150,4 +152,4 @@ elif st.session_state.step == 5:
         st.session_state.step = 1
         st.session_state.user_data = {}
         st.rerun()
-                                                                          
+    
