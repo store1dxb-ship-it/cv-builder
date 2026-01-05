@@ -3,7 +3,7 @@ from fpdf import FPDF
 import requests
 
 # ==========================================
-# 1. AI CONFIGURATION
+# 1. AI CONFIGURATION (GEMINI 2.5 FLASH-LITE)
 # ==========================================
 def get_ai_suggestions(role, info_type, skills=""):
     api_key = "AIzaSyDGnsQfMEkIb-KloUGVYxGLX4hc80HfdMg"
@@ -52,7 +52,15 @@ def create_pdf(data):
     pdf.cell(0, 5, f"{data['email']} | {data['phone']} | {data['city']}, {data['country']}", ln=True)
     pdf.ln(5)
     
-    sections = [('SUMMARY', 'summary'), ('SKILLS', 'skills'), ('EXPERIENCE', 'experience'), ('EDUCATION', 'education')]
+    sections = [
+        ('PROFESSIONAL SUMMARY', 'summary'),
+        ('CORE SKILLS', 'skills'),
+        ('PROFESSIONAL EXPERIENCE', 'experience'),
+        ('EDUCATION', 'education'),
+        ('CERTIFICATIONS', 'certs'),
+        ('KEY PROJECTS', 'projects'),
+        ('ACHIEVEMENTS', 'achievements')
+    ]
     for title, key in sections:
         if data.get(key):
             pdf.set_text_color(pdf.r, pdf.g, pdf.b)
@@ -67,59 +75,69 @@ def create_pdf(data):
     return pdf.output(dest='S').encode('latin-1', 'ignore')
 
 # ==========================================
-# 3. STREAMLIT UI
+# 3. STREAMLIT UI (FINAL DESIGN)
 # ==========================================
 st.set_page_config(page_title="AI Resume Pro", layout="wide")
 
 if 'step' not in st.session_state: st.session_state.step = 0
 if 'user_data' not in st.session_state: st.session_state.user_data = {}
 
-# --- STEP 0: TEMPLATE SELECTION (VERTICAL & FULL) ---
+# --- STEP 0: TEMPLATE SELECTION ---
 if st.session_state.step == 0:
     st.markdown("<h1 style='text-align: center; color: #1E3A8A;'>📄 Choose Your Templates</h1>", unsafe_allow_html=True)
     
-    # Template Data with Dummy Content
     templates = [
-        {"name": "Pankaj Kumar", "role": "Project Manager", "temp_type": "Classic Executive", "border": "border-left: 12px solid", "colors": {"Navy": (0, 32, 96), "Royal": (65, 105, 225), "Ocean": (0, 119, 190)}},
-        {"name": "Punit Yadav", "role": "Data Scientist", "temp_type": "Modern Bold", "border": "border-top: 18px solid", "colors": {"Burgundy": (128, 0, 0), "Rose": (255, 102, 102), "Wine": (102, 0, 0)}},
-        {"name": "Rashmi Desai", "role": "UI/UX Designer", "temp_type": "Minimalist", "border": "border: 3px solid", "colors": {"Black": (0, 0, 0), "Slate": (112, 128, 144), "Teal": (0, 128, 128)}}
+        {
+            "name": "Pankaj Kumar", "role": "Senior Project Manager", "temp_type": "Classic Executive", "border": "border-left: 12px solid", 
+            "colors": {"Navy": (0, 32, 96), "Royal": (65, 105, 225), "Ocean": (0, 119, 190)},
+            "summary": "Results-driven Project Manager with 8+ years of experience in managing cross-functional teams and budgets up to SAR 5M.",
+            "skills": "Project Planning, Agile, Waterfall, Stakeholder Management, Risk Management, Jira, MS Project.",
+            "exp": "Senior PM at ABC Solutions | DUBAI. Delivered 95% of projects on time."
+        },
+        {
+            "name": "Punit Yadav", "role": "Senior Data Scientist", "temp_type": "Modern Bold", "border": "border-top: 18px solid", 
+            "colors": {"Burgundy": (128, 0, 0), "Rose": (255, 102, 102), "Wine": (102, 0, 0)},
+            "summary": "Data Scientist with 5+ years of experience in ML and predictive modeling. Expert in extracting strategic insights from 10M+ records.",
+            "skills": "Python, R, SQL, Pandas, Scikit-learn, XGBoost, TensorFlow, Power BI, AWS.",
+            "exp": "Senior Data Scientist at ABC Analytics | Riyadh. Improved customer retention by 22%."
+        },
+        {
+            "name": "Rashmi Desai", "role": "Senior UI/UX Designer", "temp_type": "Minimalist", "border": "border: 3px solid", 
+            "colors": {"Black": (0, 0, 0), "Slate": (112, 128, 144), "Teal": (0, 128, 128)},
+            "summary": "Creative UI/UX Designer with 6+ years of experience designing intuitive digital experiences for web and mobile applications.",
+            "skills": "Figma, Adobe XD, User Research, Wireframing, Prototyping, Design Systems, Adobe Suite.",
+            "exp": "Senior Designer at Creative Digital Studio | Riyadh. Improved user engagement by 30%."
+        }
     ]
 
     cols = st.columns(3)
     for i, temp in enumerate(templates):
         with cols[i]:
-            # First color as default for preview
-            default_color_name = list(temp['colors'].keys())[0]
-            default_rgb = temp['colors'][default_color_name]
-            hex_color = '#%02x%02x%02x' % default_rgb
+            default_rgb = list(temp['colors'].values())[0]
+            hex_c = '#%02x%02x%02x' % default_rgb
 
+            # VERTICAL TEMPLATE PREVIEW
             st.markdown(f"""
-                <div style="height: 400px; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); {temp['border']} {hex_color}; padding: 15px; overflow: hidden; font-family: sans-serif;">
-                    <div style="font-size: 16px; font-weight: bold; color: #333;">{temp['name'].upper()}</div>
-                    <div style="font-size: 10px; color: #666; margin-bottom: 8px;">{temp['role']} | Mumbai, India | {temp['name'].lower().replace(' ','')}@email.com</div>
-                    <div style="width: 100%; height: 1px; background: #eee; margin-bottom: 8px;"></div>
-                    <div style="font-size: 10px; font-weight: bold; color: {hex_color};">PROFESSIONAL SUMMARY</div>
-                    <div style="font-size: 8px; color: #555; margin-bottom: 8px;">Dynamic professional with 5+ years of experience. Proven track record of delivering high-quality results and leading teams to success.</div>
-                    <div style="font-size: 10px; font-weight: bold; color: {hex_color};">SKILLS</div>
-                    <div style="font-size: 8px; color: #555; margin-bottom: 8px;">Leadership, Python, SQL, Project Management, Strategic Planning, Communication.</div>
-                    <div style="font-size: 10px; font-weight: bold; color: {hex_color};">WORK HISTORY</div>
-                    <div style="font-size: 8px; color: #555;">• Managed large scale operations<br>• Increased efficiency by 25%<br>• Reduced costs by 15% through optimization.</div>
-                    <div style="margin-top: 10px; font-size: 10px; font-weight: bold; color: {hex_color};">EDUCATION</div>
-                    <div style="font-size: 8px; color: #555;">B.Tech in Computer Science - 2018</div>
-                    <div style="margin-top: 30px; text-align: center; font-size: 12px; font-weight: bold; color: #888;">{temp['temp_type']}</div>
+                <div style="height: 520px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); {temp['border']} {hex_c}; padding: 15px; overflow-y: auto; font-family: sans-serif;">
+                    <div style="font-size: 16px; font-weight: bold; color: #222;">{temp['name'].upper()}</div>
+                    <div style="font-size: 9px; color: #777; margin-bottom: 10px;">{temp['role']} | {temp['name'].lower().replace(' ','')}@pro.com</div>
+                    <div style="font-size: 10px; font-weight: bold; color: {hex_c};">PROFESSIONAL SUMMARY</div>
+                    <div style="font-size: 8px; color: #444; margin-bottom: 8px;">{temp['summary']}</div>
+                    <div style="font-size: 10px; font-weight: bold; color: {hex_c};">EXPERIENCE</div>
+                    <div style="font-size: 8px; color: #444; margin-bottom: 8px;">{temp['exp']}</div>
+                    <div style="font-size: 10px; font-weight: bold; color: {hex_c};">CORE SKILLS</div>
+                    <div style="font-size: 8px; color: #444;">{temp['skills']}</div>
+                    <div style="margin-top: 15px; font-size: 10px; font-weight: bold; color: {hex_c};">EDUCATION</div>
+                    <div style="font-size: 8px; color: #444;">Bachelor's Degree - 2017</div>
                 </div>
             """, unsafe_allow_html=True)
             
-            # Colour Dots Selection
-            st.write("Select Shade:")
-            c_dots = st.columns(3)
-            selected_color = default_rgb # Default
-            
-            # Using radio with custom horizontal dots look
-            choice = st.radio(f"Colours for {temp['name']}", list(temp['colors'].keys()), key=f"color_{i}", horizontal=True, label_visibility="collapsed")
+            st.write("Select Color Dot:")
+            # HORIZONTAL DOTS (RADIO)
+            choice = st.radio("C", list(temp['colors'].keys()), key=f"c_{i}", horizontal=True, label_visibility="collapsed")
             selected_color = temp['colors'][choice]
 
-            if st.button(f"Use {temp['temp_type']}", key=f"btn_{i}", use_container_width=True):
+            if st.button(f"Use {temp['temp_type']}", key=f"b_{i}", use_container_width=True):
                 st.session_state.user_data['template'] = temp['temp_type']
                 st.session_state.user_data['color_rgb'] = selected_color
                 st.session_state.step = 1
@@ -128,15 +146,15 @@ if st.session_state.step == 0:
 # --- STEP 1: PERSONAL INFO ---
 elif st.session_state.step == 1:
     st.header("👤 Step 1: Personal Information")
-    with st.form("p_form"):
+    with st.form("personal"):
         c1, c2 = st.columns(2)
         name = c1.text_input("Full Name")
-        email = c2.text_input("Email ID")
-        phone = c1.text_input("Mobile Number")
-        role = c2.text_input("Target Job Role")
+        email = c2.text_input("Email")
+        phone = c1.text_input("Phone")
+        role = c2.text_input("Job Role")
         city = c1.text_input("City")
         country = c2.text_input("Country")
-        if st.form_submit_button("Next ➡️"):
+        if st.form_submit_button("Next: Content ➡️"):
             if name and role:
                 st.session_state.user_data.update({"name": name, "email": email, "phone": phone, "role": role, "city": city, "country": country})
                 st.session_state.step = 2
@@ -150,11 +168,11 @@ elif st.session_state.step == 2:
     
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("🔍 Get AI Skills"):
+        if st.button("🔍 Suggest Skills"):
             st.session_state.user_data['skills'] = get_ai_suggestions(role, "skills")
         skills = st.text_area("Skills", value=st.session_state.user_data.get('skills', ''), height=120)
         
-        if st.button("✨ Write AI Summary"):
+        if st.button("✨ Write Summary"):
             st.session_state.user_data['summary'] = get_ai_suggestions(role, "summary", skills)
         summary = st.text_area("Summary", value=st.session_state.user_data.get('summary', ''), height=120)
 
@@ -162,13 +180,14 @@ elif st.session_state.step == 2:
         if st.button("✍️ Generate Experience"):
             st.session_state.user_data['experience'] = get_ai_suggestions(role, "experience", skills)
         exp = st.text_area("Experience", value=st.session_state.user_data.get('experience', ''), height=180)
-        edu = st.text_area("Education", placeholder="College Name, Degree, Year")
+        edu = st.text_area("Education", placeholder="University, Degree, Year")
 
     st.divider()
     
     st.session_state.user_data.update({"skills": skills, "summary": summary, "experience": exp, "education": edu})
     pdf_bytes = create_pdf(st.session_state.user_data)
     
+    # SINGLE BUTTON DOWNLOAD
     st.download_button(
         label="Download My PDF Resume 📥",
         data=pdf_bytes,
