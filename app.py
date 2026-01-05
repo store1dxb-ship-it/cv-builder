@@ -67,7 +67,7 @@ def create_pdf(data):
     return pdf.output(dest='S').encode('latin-1', 'ignore')
 
 # ==========================================
-# 3. STREAMLIT UI
+# 3. STREAMLIT UI (FINALIZED)
 # ==========================================
 st.set_page_config(page_title="AI Resume SaaS", layout="wide")
 
@@ -77,7 +77,6 @@ if 'user_data' not in st.session_state: st.session_state.user_data = {}
 # --- STEP 0: TEMPLATE SELECTION ---
 if st.session_state.step == 0:
     st.markdown("<h1 style='text-align: center; color: #1E3A8A;'>📄 Choose Your Templates</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: gray;'>Apni pasand ka design aur professional colour select karein</p>", unsafe_allow_html=True)
     
     color_options = {
         "Classic Executive": {
@@ -97,13 +96,17 @@ if st.session_state.step == 0:
     cols = st.columns(3)
     for i, (temp_name, info) in enumerate(color_options.items()):
         with cols[i]:
+            # Professional Desi Profile for Visuals
             st.markdown(f"""
-                <div style="height: 220px; background: white; border-radius: 12px; box-shadow: 0 6px 12px rgba(0,0,0,0.1); {info['preview_style']} padding: 15px; display: flex; flex-direction: column; justify-content: space-between;">
-                    <div style="width: 35%; height: 10px; background: #e0e0e0; border-radius: 5px;"></div>
-                    <div style="width: 100%; height: 2px; background: #f0f0f0;"></div>
-                    <div style="width: 90%; height: 6px; background: #f5f5f5;"></div>
-                    <div style="width: 85%; height: 6px; background: #f5f5f5;"></div>
-                    <div style="width: 100%; height: 25px; background: #f0f0f0; text-align: center; font-size: 11px; line-height: 25px; font-weight: bold; color: #444; border-radius: 4px;">{temp_name}</div>
+                <div style="height: 250px; background: white; border-radius: 12px; box-shadow: 0 6px 12px rgba(0,0,0,0.1); {info['preview_style']} padding: 15px; overflow: hidden;">
+                    <div style="font-size: 14px; font-weight: bold; color: #333; margin-bottom: 2px;">ADNAN AHMED</div>
+                    <div style="font-size: 8px; color: #666; margin-bottom: 10px;">Software Engineer | Karachi/Delhi | adnan@example.com</div>
+                    <div style="width: 100%; height: 1px; background: #eee; margin-bottom: 8px;"></div>
+                    <div style="font-size: 9px; font-weight: bold; color: #444; margin-bottom: 4px;">SUMMARY</div>
+                    <div style="font-size: 7px; color: #777; line-height: 1.2;">Passionate engineer with 4+ years of experience in Python, AI, and Full Stack Development.</div>
+                    <div style="margin-top: 8px; font-size: 9px; font-weight: bold; color: #444; margin-bottom: 4px;">EXPERIENCE</div>
+                    <div style="font-size: 7px; color: #777;">• Developed scalable SaaS solutions<br>• Improved database efficiency by 35%</div>
+                    <div style="margin-top: 20px; text-align: center; font-size: 11px; font-weight: bold; color: #1E3A8A;">{temp_name}</div>
                 </div>
             """, unsafe_allow_html=True)
             
@@ -155,8 +158,16 @@ elif st.session_state.step == 2:
         edu = st.text_area("Education")
 
     st.divider()
-    if st.button("Download My PDF Resume 📥", use_container_width=True):
-        st.session_state.user_data.update({"skills": skills, "summary": summary, "experience": exp, "education": edu})
-        pdf_bytes = create_pdf(st.session_state.user_data)
-        st.download_button("Click here to Download", data=pdf_bytes, file_name=f"{st.session_state.user_data['name']}_Resume.pdf")
     
+    # SINGLE BUTTON DOWNLOAD
+    st.session_state.user_data.update({"skills": skills, "summary": summary, "experience": exp, "education": edu})
+    pdf_bytes = create_pdf(st.session_state.user_data)
+    
+    st.download_button(
+        label="Download My PDF Resume 📥",
+        data=pdf_bytes,
+        file_name=f"{st.session_state.user_data['name']}_Resume.pdf",
+        mime="application/pdf",
+        use_container_width=True
+    )
+
