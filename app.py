@@ -3,7 +3,7 @@ from fpdf import FPDF
 import requests
 
 # ==========================================
-# 1. AI CONFIGURATION
+# 1. AI CONFIGURATION (GEMINI 2.5 FLASH-LITE)
 # ==========================================
 def get_ai_suggestions(role, info_type, skills=""):
     api_key = "AIzaSyDGnsQfMEkIb-KloUGVYxGLX4hc80HfdMg"
@@ -43,15 +43,11 @@ def create_pdf(data):
     pdf = PDF()
     pdf.r, pdf.g, pdf.b = data.get('color_rgb', (0, 0, 0))
     pdf.add_page()
-    pdf.set_text_color(0, 0, 0)
-    
     pdf.set_font('Arial', 'B', 20)
     pdf.cell(0, 10, data['name'].upper(), ln=True)
     pdf.set_font('Arial', '', 10)
-    pdf.set_text_color(100, 100, 100)
     pdf.cell(0, 5, f"{data['email']} | {data['phone']} | {data['city']}, {data['country']}", ln=True)
     pdf.ln(5)
-    
     sections = [('SUMMARY', 'summary'), ('SKILLS', 'skills'), ('EXPERIENCE', 'experience'), ('EDUCATION', 'education')]
     for title, key in sections:
         if data.get(key):
@@ -60,87 +56,5 @@ def create_pdf(data):
             pdf.cell(0, 10, title, ln=True)
             pdf.line(pdf.get_x(), pdf.get_y(), pdf.get_x()+190, pdf.get_y())
             pdf.ln(2)
-            pdf.set_text_color(0, 0, 0)
-            pdf.set_font('Arial', '', 10)
-            pdf.multi_cell(0, 6, data[key])
-            pdf.ln(5)
-    return pdf.output(dest='S').encode('latin-1', 'ignore')
-
-# ==========================================
-# 3. STREAMLIT UI
-# ==========================================
-st.set_page_config(page_title="AI Resume SaaS", layout="wide")
-
-if 'step' not in st.session_state: st.session_state.step = 0
-if 'user_data' not in st.session_state: st.session_state.user_data = {}
-
-# --- STEP 0: TEMPLATE & COLOR ---
-if st.session_state.step == 0:
-    st.title("🎨 Select Design & Color")
-    
-    color_options = {
-        "Classic Blue": {"Navy": (0, 32, 96), "Royal": (65, 105, 225), "Sky": (0, 176, 240)},
-        "Modern Executive": {"Burgundy": (128, 0, 0), "Forest": (34, 139, 34), "Charcoal": (54, 69, 79)},
-        "Minimalist": {"Black": (0, 0, 0), "Slate": (112, 128, 144), "Teal": (0, 128, 128)}
-    }
-
-    cols = st.columns(3)
-    for i, (temp_name, variants) in enumerate(color_options.items()):
-        with cols[i]:
-            # FIXED: unsafe_allow_html=True use kiya hai
-            st.markdown(f"""
-                <div style="padding:20px; border-radius:10px; border:2px solid #ddd; text-align:center; background-color:#f9f9f9;">
-                    <h3 style="margin:0;">{temp_name}</h3>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            variant = st.selectbox(f"Select Color", list(variants.keys()), key=f"sel_{i}")
-            
-            if st.button(f"Choose {temp_name}", key=f"btn_{i}"):
-                st.session_state.user_data['template'] = temp_name
-                st.session_state.user_data['color_rgb'] = variants[variant]
-                st.session_state.step = 1
-                st.rerun()
-
-# --- STEP 1: PERSONAL INFO ---
-elif st.session_state.step == 1:
-    st.header("👤 Personal Information")
-    with st.form("p_form"):
-        c1, c2 = st.columns(2)
-        name = c1.text_input("Full Name")
-        email = c2.text_input("Email ID")
-        phone = c1.text_input("Mobile Number")
-        role = c2.text_input("Target Job Role")
-        city = c1.text_input("City")
-        country = c2.text_input("Country")
-        if st.form_submit_button("Next ➡️"):
-            if name and role:
-                st.session_state.user_data.update({"name": name, "email": email, "phone": phone, "role": role, "city": city, "country": country})
-                st.session_state.step = 2
-                st.rerun()
-            else: st.error("Name and Role are required!")
-
-# --- STEP 2: AI CONTENT ---
-elif st.session_state.step == 2:
-    st.header(f"🤖 Content Generation ({st.session_state.user_data['role']})")
-    role = st.session_state.user_data['role']
-    
-    if st.button("🔍 Get AI Skills"):
-        st.session_state.user_data['skills'] = get_ai_suggestions(role, "skills")
-    skills = st.text_area("Skills", value=st.session_state.user_data.get('skills', ''))
-    
-    if st.button("✨ Write AI Summary"):
-        st.session_state.user_data['summary'] = get_ai_suggestions(role, "summary", skills)
-    summary = st.text_area("Summary", value=st.session_state.user_data.get('summary', ''))
-    
-    if st.button("✍️ Generate Experience"):
-        st.session_state.user_data['experience'] = get_ai_suggestions(role, "experience", skills)
-    exp = st.text_area("Experience", value=st.session_state.user_data.get('experience', ''), height=200)
-    
-    edu = st.text_area("Education")
-
-    if st.button("Download Resume 📥"):
-        st.session_state.user_data.update({"skills": skills, "summary": summary, "experience": exp, "education": edu})
-        pdf_bytes = create_pdf(st.session_state.user_data)
-        st.download_button("Download PDF", data=pdf_bytes, file_name="Resume.pdf")
-
+            pdf.set_text_color(0, 0,
+                               
