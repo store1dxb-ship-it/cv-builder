@@ -75,7 +75,7 @@ def create_pdf(data):
     return pdf.output(dest='S').encode('latin-1', 'ignore')
 
 # ==========================================
-# 3. STREAMLIT UI (FINAL DESIGN)
+# 3. STREAMLIT UI (FINALIZED)
 # ==========================================
 st.set_page_config(page_title="AI Resume Pro", layout="wide")
 
@@ -90,23 +90,29 @@ if st.session_state.step == 0:
         {
             "name": "Pankaj Kumar", "role": "Senior Project Manager", "temp_type": "Classic Executive", "border": "border-left: 12px solid", 
             "colors": {"Navy": (0, 32, 96), "Royal": (65, 105, 225), "Ocean": (0, 119, 190)},
-            "summary": "Results-driven Project Manager with 8+ years of experience in managing cross-functional teams and budgets up to SAR 5M.",
-            "skills": "Project Planning, Agile, Waterfall, Stakeholder Management, Risk Management, Jira, MS Project.",
-            "exp": "Senior PM at ABC Solutions | DUBAI. Delivered 95% of projects on time."
+            "summary": "Results-driven Project Manager with 8+ years of experience in managing cross-functional teams, delivering projects on time and within budget, and driving process improvements. Expertise in Agile, Waterfall, and risk mitigation.",
+            "skills": "Project Planning & Execution, Agile & Waterfall, Stakeholder Management, Risk & Issue Management, Budgeting & Cost Control, Team Leadership, Jira, MS Project.",
+            "exp": "Senior Project Manager at ABC Solutions | DUBAI. Led 12+ large-scale digital transformation projects valued up to SAR 5M. Delivered 95% of projects within timelines.",
+            "edu": "Bachelor of Engineering (Computer Science) - Mumbai University | 2016",
+            "certs": "PMP, Certified Scrum Master (CSM), ITIL Foundation"
         },
         {
             "name": "Punit Yadav", "role": "Senior Data Scientist", "temp_type": "Modern Bold", "border": "border-top: 18px solid", 
             "colors": {"Burgundy": (128, 0, 0), "Rose": (255, 102, 102), "Wine": (102, 0, 0)},
-            "summary": "Data Scientist with 5+ years of experience in ML and predictive modeling. Expert in extracting strategic insights from 10M+ records.",
-            "skills": "Python, R, SQL, Pandas, Scikit-learn, XGBoost, TensorFlow, Power BI, AWS.",
-            "exp": "Senior Data Scientist at ABC Analytics | Riyadh. Improved customer retention by 22%."
+            "summary": "Data Scientist with 5+ years of experience in ML and predictive modeling. Expert in extracting strategic insights from 10M+ records to drive decision-making.",
+            "skills": "Python, R, SQL, Pandas, Scikit-learn, XGBoost, TensorFlow, Power BI, AWS, Spark.",
+            "exp": "Senior Data Scientist at ABC Analytics | Riyadh. Developed predictive models improving customer retention by 22% and automated reporting.",
+            "edu": "Master of Science (Data Science) - Pune University | 2018",
+            "certs": "IBM Data Science, Google Data Analytics"
         },
         {
             "name": "Rashmi Desai", "role": "Senior UI/UX Designer", "temp_type": "Minimalist", "border": "border: 3px solid", 
             "colors": {"Black": (0, 0, 0), "Slate": (112, 128, 144), "Teal": (0, 128, 128)},
-            "summary": "Creative UI/UX Designer with 6+ years of experience designing intuitive digital experiences for web and mobile applications.",
-            "skills": "Figma, Adobe XD, User Research, Wireframing, Prototyping, Design Systems, Adobe Suite.",
-            "exp": "Senior Designer at Creative Digital Studio | Riyadh. Improved user engagement by 30%."
+            "summary": "Creative UI/UX Designer with 6+ years of experience designing intuitive digital experiences. Expert in user research, wireframing, and design systems.",
+            "skills": "Figma, Adobe XD, User Research, Wireframing, Prototyping, Design Systems, Usability Testing, Accessibility.",
+            "exp": "Senior Designer at Creative Digital Studio | Riyadh. Improved user engagement by 30% through UX optimization and scalable design systems.",
+            "edu": "Bachelor of Design (B.Des) - National Institute of Design | 2017",
+            "certs": "Google UX Design, Interaction Design Foundation"
         }
     ]
 
@@ -116,24 +122,30 @@ if st.session_state.step == 0:
             default_rgb = list(temp['colors'].values())[0]
             hex_c = '#%02x%02x%02x' % default_rgb
 
-            # VERTICAL TEMPLATE PREVIEW
+            # VERTICAL TEMPLATE PREVIEW (FULL CONTENT)
             st.markdown(f"""
-                <div style="height: 520px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); {temp['border']} {hex_c}; padding: 15px; overflow-y: auto; font-family: sans-serif;">
+                <div style="height: 550px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); {temp['border']} {hex_c}; padding: 15px; overflow-y: auto; font-family: sans-serif;">
                     <div style="font-size: 16px; font-weight: bold; color: #222;">{temp['name'].upper()}</div>
                     <div style="font-size: 9px; color: #777; margin-bottom: 10px;">{temp['role']} | {temp['name'].lower().replace(' ','')}@pro.com</div>
+                    
                     <div style="font-size: 10px; font-weight: bold; color: {hex_c};">PROFESSIONAL SUMMARY</div>
                     <div style="font-size: 8px; color: #444; margin-bottom: 8px;">{temp['summary']}</div>
+                    
                     <div style="font-size: 10px; font-weight: bold; color: {hex_c};">EXPERIENCE</div>
                     <div style="font-size: 8px; color: #444; margin-bottom: 8px;">{temp['exp']}</div>
+                    
                     <div style="font-size: 10px; font-weight: bold; color: {hex_c};">CORE SKILLS</div>
-                    <div style="font-size: 8px; color: #444;">{temp['skills']}</div>
-                    <div style="margin-top: 15px; font-size: 10px; font-weight: bold; color: {hex_c};">EDUCATION</div>
-                    <div style="font-size: 8px; color: #444;">Bachelor's Degree - 2017</div>
+                    <div style="font-size: 8px; color: #444; margin-bottom: 8px;">{temp['skills']}</div>
+                    
+                    <div style="font-size: 10px; font-weight: bold; color: {hex_c};">EDUCATION</div>
+                    <div style="font-size: 8px; color: #444; margin-bottom: 8px;">{temp['edu']}</div>
+                    
+                    <div style="font-size: 10px; font-weight: bold; color: {hex_c};">CERTIFICATIONS</div>
+                    <div style="font-size: 8px; color: #444;">{temp['certs']}</div>
                 </div>
             """, unsafe_allow_html=True)
             
-            st.write("Select Color Dot:")
-            # HORIZONTAL DOTS (RADIO)
+            st.write("Select Shade:")
             choice = st.radio("C", list(temp['colors'].keys()), key=f"c_{i}", horizontal=True, label_visibility="collapsed")
             selected_color = temp['colors'][choice]
 
@@ -154,7 +166,7 @@ elif st.session_state.step == 1:
         role = c2.text_input("Job Role")
         city = c1.text_input("City")
         country = c2.text_input("Country")
-        if st.form_submit_button("Next: Content ➡️"):
+        if st.form_submit_button("Next ➡️"):
             if name and role:
                 st.session_state.user_data.update({"name": name, "email": email, "phone": phone, "role": role, "city": city, "country": country})
                 st.session_state.step = 2
@@ -183,11 +195,9 @@ elif st.session_state.step == 2:
         edu = st.text_area("Education", placeholder="University, Degree, Year")
 
     st.divider()
-    
     st.session_state.user_data.update({"skills": skills, "summary": summary, "experience": exp, "education": edu})
     pdf_bytes = create_pdf(st.session_state.user_data)
     
-    # SINGLE BUTTON DOWNLOAD
     st.download_button(
         label="Download My PDF Resume 📥",
         data=pdf_bytes,
@@ -195,4 +205,4 @@ elif st.session_state.step == 2:
         mime="application/pdf",
         use_container_width=True
     )
-
+    
