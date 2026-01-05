@@ -3,26 +3,29 @@ from fpdf import FPDF
 import requests
 
 # ==========================================
-# 1. AI CONFIGURATION (WORKING KEY & MODEL)
+# 1. AI CONFIGURATION (GEMINI 2.5 FLASH-LITE)
 # ==========================================
-def get_ai_suggestions(role, info_type):
+def get_ai_suggestions(role, info_type, skills="", experience=""):
     api_key = "AIzaSyDGnsQfMEkIb-KloUGVYxGLX4hc80HfdMg"
-    # Using the high-quota model that worked in testing
     model = "gemini-2.5-flash-lite"
     url = f"https://generativelanguage.googleapis.com/v1/models/{model}:generateContent?key={api_key}"
     
-    prompt = f"Write a professional and concise {'resume summary' if info_type == 'summary' else 'job experience bullets'} for a {role}."
+    if info_type == "skills":
+        prompt = f"List 10 professional skills for a {role} resume. Only comma separated."
+    elif info_type == "summary":
+        prompt = f"Write a 3-line powerful professional summary for a {role} resume using these skills: {skills}. Focus on impact and expertise."
+    elif info_type == "experience":
+        prompt = f"Write 5 professional work history bullet points for a {role} role using these skills: {skills}. Use strong action verbs."
+    
     data = {"contents": [{"parts": [{"text": prompt}]}]}
     
     try:
-        response = requests.post(url, json=data, timeout=10)
+        response = requests.post(url, json=data, timeout=12)
         if response.status_code == 200:
-            res_json = response.json()
-            return res_json['candidates'][0]['content']['parts'][0]['text']
-        else:
-            return ""
+            return response.json()['candidates'][0]['content']['parts'][0]['text']
     except:
         return ""
+    return ""
 
 # ==========================================
 # 2. PDF GENERATION LOGIC
@@ -33,102 +36,129 @@ class PDF(FPDF):
         self.cell(0, 10, 'RESUME', 0, 1, 'C')
         self.ln(5)
 
+    def section_title(self, title):
+        self.set_font('Arial', 'B', 11)
+        self.set_fill_color(240, 240, 240)
+        self.cell(0, 7, title, 0, 1, 'L', fill=True)
+        self.ln(2)
+
+    def section_content(self, content):
+        self.set_font('Arial', '', 10)
+        self.multi_cell(0, 5, content)
+        self.ln(3)
+
 def create_pdf(data):
     pdf = PDF()
     pdf.add_page()
     
-    # Personal Info
-    pdf.set_font('Arial', 'B', 16)
+    # Personal Header
+    pdf.set_font('Arial', 'B', 18)
     pdf.cell(0, 10, data['name'].upper(), ln=True)
-    pdf.set_font('Arial', '', 12)
-    pdf.cell(0, 7, f"Email: {data['email']} | Phone: {data['phone']}", ln=True)
-    pdf.cell(0, 7, f"Role: {data['role']}", ln=True)
+    pdf.set_font('Arial', '', 10)
+    pdf.cell(0, 5, f"Email: {data['email']} | Phone: {data['phone']}", ln=True)
+    pdf.cell(0, 5, f"Target Role: {data['role']}", ln=True)
+    if data.get('portfolio'): pdf.cell(0, 5, f"Portfolio: {data['portfolio']}", ln=True)
     pdf.ln(5)
     
-    # Summary
-    pdf.set_font('Arial', 'B', 14)
-    pdf.cell(0, 10, 'PROFESSIONAL SUMMARY', ln=True)
-    pdf.set_font('Arial', '', 11)
-    pdf.multi_cell(0, 7, data['summary'])
-    pdf.ln(5)
+    # Standard Sections
+    mapping = [
+        ('PROFESSIONAL SUMMARY', 'summary'),
+        ('SKILLS', 'skills'),
+        ('EXPERIENCE', 'experience'),
+        ('EDUCATION', 'education'),
+        ('LANGUAGES', 'languages'),
+        ('CERTIFICATIONS', 'certifications')
+    ]
     
-    # Education
-    pdf.set_font('Arial', 'B', 14)
-    pdf.cell(0, 10, 'EDUCATION', ln=True)
-    pdf.set_font('Arial', '', 11)
-    pdf.multi_cell(0, 7, data['education'])
-    pdf.ln(5)
-    
-    # Experience
-    pdf.set_font('Arial', 'B', 14)
-    pdf.cell(0, 10, 'EXPERIENCE', ln=True)
-    pdf.set_font('Arial', '', 11)
-    pdf.multi_cell(0, 7, data['experience'])
-    
-    return pdf.output(dest='S').encode('latin-1')
+    for title, key in mapping:
+        if data.get(key):
+            pdf.section_title(title)
+            pdf.section_content(data[key])
+            
+    return pdf.output(dest='S').encode('latin-1', 'ignore')
 
 # ==========================================
-# 3. STREAMLIT UI (MULTI-STEP FORM)
+# 3. STREAMLIT UI
 # ==========================================
-st.set_page_config(page_title="AI Resume Builder", page_icon="📝")
+st.set_page_config(page_title="AI Resume Pro", layout="wide")
 
 if 'step' not in st.session_state: st.session_state.step = 1
 if 'user_data' not in st.session_state: st.session_state.user_data = {}
 
-st.title("🚀 AI Professional Resume Builder")
-
-# --- STEP 1: Personal Details ---
+# --- STEP 1: Basic Info ---
 if st.session_state.step == 1:
-    st.header("👤 Step 1: Personal Information")
-    with st.form("personal_details"):
+    st.title("👤 Step 1: Profile Details")
+    with st.form("basics"):
         name = st.text_input("Full Name")
-        email = st.text_input("Email Address")
+        role = st.text_input("Job Role You Are Applying For", placeholder="e.g. Sales Manager")
+        email = st.text_input("Email")
         phone = st.text_input("Phone Number")
-        role = st.text_input("Target Job Role (e.g. Teacher, Developer)")
-        
-        if st.form_submit_button("Next ➡️"):
+        portfolio = st.text_input("LinkedIn/Portfolio (Optional)")
+        if st.form_submit_button("Next: Skills ➡️"):
             if name and role:
-                st.session_state.user_data.update({"name": name, "email": email, "phone": phone, "role": role})
+                st.session_state.user_data.update({"name": name, "role": role, "email": email, "phone": phone, "portfolio": portfolio})
                 st.session_state.step = 2
                 st.rerun()
-            else:
-                st.error("Please fill Name and Role!")
+            else: st.error("Name aur Role bharna zaroori hai!")
 
-# --- STEP 2: AI Content Generation ---
+# --- STEP 2: Skills & AI Summary ---
 elif st.session_state.step == 2:
-    st.header("🤖 Step 2: AI Content Generation")
+    st.title(f"🛠️ Step 2: Skills & Summary for {st.session_state.user_data['role']}")
     role = st.session_state.user_data['role']
     
-    st.subheader(f"Summary for {role}")
-    if st.button("✨ Generate AI Summary"):
-        with st.spinner("AI is writing..."):
-            suggestion = get_ai_suggestions(role, "summary")
-            st.session_state.user_data['summary'] = suggestion
+    # Skills Section
+    st.subheader("Skills")
+    if st.button("🔍 Get AI Skill Suggestions"):
+        st.session_state.user_data['skills'] = get_ai_suggestions(role, "skills")
+    skills = st.text_area("Skills (Comma separated)", value=st.session_state.user_data.get('skills', ''), height=100)
 
-    summary = st.text_area("Edit Summary", value=st.session_state.user_data.get('summary', ''), height=150)
-    
     st.divider()
+
+    # AI Summary Section (Based on Screenshot)
+    st.subheader("📄 Professional Summary")
+    st.info("AI aapke Skills aur Role ke behalf par summary likhega.")
+    if st.button("✨ Generate AI Summary"):
+        with st.spinner("Writing professional summary..."):
+            st.session_state.user_data['summary'] = get_ai_suggestions(role, "summary", skills)
     
-    st.subheader("Experience & Education")
-    education = st.text_area("Education Details (School, Degree, Year)", placeholder="E.g. Delhi University, B.Ed, 2018")
-    experience = st.text_area("Experience Details", placeholder="E.g. 5 Years teaching at ABC School")
+    summary = st.text_area("Edit Summary", value=st.session_state.user_data.get('summary', ''), height=150)
 
     col1, col2 = st.columns(2)
-    with col1:
-        if st.button("⬅️ Back"):
-            st.session_state.step = 1
-            st.rerun()
-    with col2:
-        if st.button("Download PDF 📄"):
-            st.session_state.user_data.update({"summary": summary, "education": education, "experience": experience})
-            pdf_bytes = create_pdf(st.session_state.user_data)
-            st.download_button(label="Click here to Download", data=pdf_bytes, file_name="Resume.pdf", mime="application/pdf")
+    if col1.button("⬅️ Back"):
+        st.session_state.step = 1
+        st.rerun()
+    if col2.button("Next: Work Experience ➡️"):
+        st.session_state.user_data.update({"skills": skills, "summary": summary})
+        st.session_state.step = 3
+        st.rerun()
 
-# ==========================================
-# 4. REQUIREMENTS.TXT (FOR DEPLOYMENT)
-# ==========================================
-# requirements.txt mein ye teen lines honi chahiye:
-# streamlit
-# fpdf
-# requests
+# --- STEP 3: Work History & Finalize ---
+elif st.session_state.step == 3:
+    st.title("🏢 Step 3: Work Experience & Education")
+    role = st.session_state.user_data['role']
+    skills = st.session_state.user_data.get('skills', '')
 
+    st.subheader("Work Experience")
+    if st.button("✍️ Suggest Work History Points"):
+        with st.spinner("Generating points..."):
+            st.session_state.user_data['experience'] = get_ai_suggestions(role, "experience", skills)
+    
+    experience = st.text_area("Experience Details", value=st.session_state.user_data.get('experience', ''), height=200)
+    
+    education = st.text_area("Education", placeholder="Degree, School, Year")
+    
+    c1, c2 = st.columns(2)
+    languages = c1.text_input("Languages")
+    certs = c2.text_input("Certifications")
+
+    st.divider()
+    
+    if st.button("⬅️ Back"):
+        st.session_state.step = 2
+        st.rerun()
+        
+    if st.button("Finish & Download Resume 📥"):
+        st.session_state.user_data.update({"experience": experience, "education": education, "languages": languages, "certifications": certs})
+        pdf_bytes = create_pdf(st.session_state.user_data)
+        st.download_button("Download PDF", data=pdf_bytes, file_name=f"{st.session_state.user_data['name']}_Resume.pdf")
+        
