@@ -90,9 +90,9 @@ if st.session_state.step == 0:
         {
             "name": "Pankaj Kumar", "role": "Senior Project Manager", "temp_type": "Classic Executive", "border": "border-left: 12px solid", 
             "colors": {"Navy": (0, 32, 96), "Royal": (65, 105, 225), "Ocean": (0, 119, 190)},
-            "summary": "Results-driven Project Manager with 8+ years of experience in managing cross-functional teams, delivering projects on time and within budget, and driving process improvements.",
-            "skills": "Project Planning & Execution, Agile & Waterfall, Stakeholder Management, Risk & Issue Management, Budgeting, Team Leadership, Jira.",
-            "exp": "Senior PM at ABC Solutions | DUBAI. Led 12+ large-scale digital transformation projects valued up to SAR 5M.",
+            "summary": "Results-driven Project Manager with 8+ years of experience in managing cross-functional teams, delivering projects on time and within budget, and driving process improvements. Expertise in Agile, Waterfall, and risk mitigation.",
+            "skills": "Project Planning & Execution, Agile & Waterfall, Stakeholder Management, Risk & Issue Management, Budgeting, Team Leadership, Jira, MS Project.",
+            "exp": "Senior PM at ABC Solutions | DUBAI. Led 12+ large-scale digital transformation projects valued up to SAR 5M. Delivered 95% of projects within timelines.",
             "edu": "Bachelor of Engineering (CS) - Mumbai University | 2016",
             "certs": "PMP, CSM, ITIL Foundation"
         },
@@ -119,12 +119,13 @@ if st.session_state.step == 0:
     cols = st.columns(3)
     for i, temp in enumerate(templates):
         with cols[i]:
-            # Fixed HTML rendering to avoid SyntaxError
+            # Fixed HTML Rendering Logic
             default_rgb = list(temp['colors'].values())[0]
             hex_c = '#%02x%02x%02x' % default_rgb
 
-            st.markdown(f"""
-                <div style="height: 550px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); {temp['border']} {hex_c}; padding: 15px; overflow-y: auto; font-family: sans-serif;">
+            # Template Preview Box
+            html_box = f"""
+                <div style="height: 550px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); {temp['border']} {hex_c}; padding: 15px; overflow-y: auto; font-family: sans-serif; text-align: left;">
                     <div style="font-size: 16px; font-weight: bold; color: #222;">{temp['name'].upper()}</div>
                     <div style="font-size: 9px; color: #777; margin-bottom: 10px;">{temp['role']} | {temp['name'].lower().replace(' ','')}@pro.com</div>
                     
@@ -143,7 +144,8 @@ if st.session_state.step == 0:
                     <div style="font-size: 10px; font-weight: bold; color: {hex_c};">CERTIFICATIONS</div>
                     <div style="font-size: 8px; color: #444;">{temp['certs']}</div>
                 </div>
-            """, unsafe_allow_html=True)
+            """
+            st.markdown(html_box, unsafe_allow_html=True)
             
             st.write("Select Color Dot:")
             choice = st.radio("C", list(temp['colors'].keys()), key=f"c_{i}", horizontal=True, label_visibility="collapsed")
@@ -155,7 +157,7 @@ if st.session_state.step == 0:
                 st.session_state.step = 1
                 st.rerun()
 
-# Step 1 & 2 logic remains same as before...
+# Step 1 & 2 logic same...
 elif st.session_state.step == 1:
     st.header("👤 Step 1: Personal Information")
     with st.form("p_form"):
