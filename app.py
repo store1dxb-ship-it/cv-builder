@@ -1,20 +1,103 @@
-# Is line ko file ke sabse upar (Imports section mein) add karein:
+import streamlit as st
+import requests
+from weasyprint import HTML
+from jinja2 import Template
 from st_click_detector import click_detector
+import templates  # Importing your templates.py file
 
-# ... (Step 1 and Step 2 code remains SAME) ...
+# ==========================================
+# 1. AI CONFIGURATION
+# ==========================================
+def get_ai_suggestions(role, info_type):
+    api_key = "AIzaSyDGnsQfMEkIb-KloUGVYxGLX4hc80HfdMg"
+    model = "gemini-2.5-flash-lite"
+    url = f"https://generativelanguage.googleapis.com/v1/models/{model}:generateContent?key={api_key}"
+    
+    prompt = f"Write a professional and concise {'resume summary' if info_type == 'summary' else 'job experience bullets'} for a {role}."
+    data = {"contents": [{"parts": [{"text": prompt}]}]}
+    
+    try:
+        response = requests.post(url, json=data, timeout=10)
+        if response.status_code == 200:
+            res_json = response.json()
+            return res_json['candidates'][0]['content']['parts'][0]['text']
+        else:
+            return ""
+    except:
+        return ""
+
+# ==========================================
+# 2. STREAMLIT UI SETUP
+# ==========================================
+st.set_page_config(page_title="AI Resume Pro", page_icon="📝", layout="wide")
+
+if 'step' not in st.session_state: st.session_state.step = 1
+if 'user_data' not in st.session_state: st.session_state.user_data = {}
+# Initialize selected template if not present
+if 'selected_template' not in st.session_state: st.session_state.selected_template = "Classic Blue"
+
+st.title("🚀 AI Professional Resume Builder")
+
+# --- STEP 1: Personal Details ---
+if st.session_state.step == 1:
+    st.header("👤 Step 1: Personal Information")
+    with st.form("personal_details"):
+        name = st.text_input("Full Name")
+        email = st.text_input("Email Address")
+        phone = st.text_input("Phone Number")
+        role = st.text_input("Target Job Role (e.g. Teacher, Developer)")
+        
+        if st.form_submit_button("Next: AI Content ➡️"):
+            if name and role:
+                st.session_state.user_data.update({"name": name, "email": email, "phone": phone, "role": role})
+                st.session_state.step = 2
+                st.rerun()
+            else:
+                st.error("Please fill Name and Role!")
+
+# --- STEP 2: AI Content Generation ---
+elif st.session_state.step == 2:
+    st.header("🤖 Step 2: Content Generation")
+    role = st.session_state.user_data['role']
+    
+    # AI Buttons
+    col_ai_1, col_ai_2 = st.columns(2)
+    with col_ai_1:
+        if st.button("✨ Auto-Write Summary"):
+            with st.spinner("AI is writing summary..."):
+                suggestion = get_ai_suggestions(role, "summary")
+                st.session_state.user_data['summary'] = suggestion
+                st.rerun()
+
+    # Input Fields
+    summary = st.text_area("Professional Summary", value=st.session_state.user_data.get('summary', ''), height=150)
+    experience = st.text_area("Experience Details", value=st.session_state.user_data.get('experience', ''), placeholder="Enter your work history here...", height=150)
+    education = st.text_area("Education Details", value=st.session_state.user_data.get('education', ''), placeholder="Enter your degrees here...", height=100)
+
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col1:
+        if st.button("⬅️ Back"):
+            st.session_state.step = 1
+            st.rerun()
+    with col3:
+        if st.button("Next: Choose Design 🎨"):
+            st.session_state.user_data.update({
+                "summary": summary, 
+                "education": education, 
+                "experience": experience
+            })
+            st.session_state.step = 3
+            st.rerun()
 
 # --- STEP 3: TEMPLATE SELECTION (CLICKABLE THUMBNAILS) ---
 elif st.session_state.step == 3:
     st.header("🏆 Step 3: Choose Your Professional Template")
     
-    # Initialize selection
-    if 'selected_template' not in st.session_state:
-        st.session_state.selected_template = "Classic Blue"
-
     col_left, col_right = st.columns([1, 2])
     
     with col_left:
         st.subheader("🎨 Select Design")
+        st.caption("Click on a template to select it.")
         
         # --- CSS STYLES ---
         css_content = """
@@ -30,10 +113,10 @@ elif st.session_state.step == 3:
             .selected-img { border: 3px solid #007bff; transform: scale(1.02); }
             
             /* Text Styles */
-            .t-name { font-weight: bold; font-size: 10px; margin-bottom: 3px; }
+            .t-name { font-weight: bold; font-size: 10px; margin-bottom: 3px; color: black; }
             .t-role { font-size: 8px; color: #555; margin-bottom: 5px; }
             .t-text { font-size: 6px; color: #666; line-height: 1.3; margin-bottom: 4px; }
-            .t-head { font-weight: bold; font-size: 7px; margin-top: 6px; margin-bottom: 3px; text-transform: uppercase; }
+            .t-head { font-weight: bold; font-size: 7px; margin-top: 6px; margin-bottom: 3px; text-transform: uppercase; color: black; }
             
             /* Specific Styles */
             .tb-header { border-bottom: 3px solid #2c3e50; padding: 8px; background: #f8f9fa; }
@@ -44,10 +127,8 @@ elif st.session_state.step == 3:
         """
 
         # --- HTML BUILDER FOR THUMBNAILS ---
-        # Hum check karenge ki kaunsa selected hai taaki uspar Border laga sakein
         sel = st.session_state.selected_template
         
-        # Helper to add 'selected-img' class
         def get_class(name):
             return "thumb-box selected-img" if sel == name else "thumb-box"
 
@@ -84,11 +165,9 @@ elif st.session_state.step == 3:
         </div>
         """
 
-        # --- CLICK DETECTOR (Magic happens here) ---
-        # Yeh function HTML render karega aur click hone par ID return karega
+        # --- CLICK DETECTOR ---
         clicked_id = click_detector(html_code, css_content)
 
-        # Agar user ne click kiya, toh state update karein aur rerun karein
         if clicked_id and clicked_id != st.session_state.selected_template:
             st.session_state.selected_template = clicked_id
             st.rerun()
@@ -107,11 +186,19 @@ elif st.session_state.step == 3:
         jinja_template = Template(html_template_string)
         filled_html = jinja_template.render(**st.session_state.user_data)
         
-        # Force White Background in Preview
-        preview_html = f"<style>body {{ background-color: white !important; }}</style>{filled_html}"
+        # PREVIEW FIX: FORCE WHITE BACKGROUND
+        preview_html = f"""
+        <style>
+            body {{ background-color: white !important; color: black !important; }}
+        </style>
+        {filled_html}
+        """
+        
+        # SHOW HTML PREVIEW
         st.components.v1.html(preview_html, height=800, scrolling=True)
         
         # --- DOWNLOAD BUTTON ---
+        # Generate PDF Bytes
         pdf_bytes = HTML(string=filled_html).write_pdf()
         
         st.download_button(
