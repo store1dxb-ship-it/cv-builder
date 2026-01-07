@@ -88,6 +88,7 @@ elif st.session_state.step == 2:
             st.rerun()
 
 # --- STEP 3: TEMPLATE SELECTION (REALISTIC PREVIEW) ---
+      # --- STEP 3: TEMPLATE SELECTION (REALISTIC & FULL) ---
 elif st.session_state.step == 3:
     st.header("🏆 Step 3: Choose Your Professional Template")
     
@@ -106,10 +107,10 @@ elif st.session_state.step == 3:
             /* Base Box Style */
             .thumb-box {
                 width: 100%;
-                height: 140px;
+                height: 160px; /* Height badhai taaki full dikhe */
                 border: 1px solid #ccc;
                 border-radius: 5px;
-                margin-bottom: 10px;
+                margin-bottom: 12px;
                 background: white;
                 overflow: hidden;
                 position: relative;
@@ -121,37 +122,37 @@ elif st.session_state.step == 3:
             .thumb-box:hover { transform: scale(1.02); border-color: #007bff; }
             
             /* Common Text Styles */
-            .t-name { font-weight: bold; font-size: 8px; margin-bottom: 2px; }
-            .t-role { font-size: 6px; color: #555; margin-bottom: 4px; }
-            .t-text { font-size: 4px; color: #777; line-height: 1.2; margin-bottom: 3px; text-align: justify; }
-            .t-head { font-weight: bold; font-size: 5px; margin-top: 5px; margin-bottom: 2px; text-transform: uppercase; }
-            
+            .t-name { font-weight: bold; font-size: 9px; margin-bottom: 2px; }
+            .t-role { font-size: 7px; color: #555; margin-bottom: 5px; }
+            .t-text { font-size: 5px; color: #666; line-height: 1.3; margin-bottom: 4px; text-align: justify; }
+            .t-head { font-weight: bold; font-size: 6px; margin-top: 6px; margin-bottom: 3px; text-transform: uppercase; }
+            .t-pill { display: inline-block; background: #eee; padding: 1px 3px; border-radius: 2px; font-size: 4px; margin-right: 2px;}
+
             /* 1. Classic Blue Specifics */
-            .tb-header { border-bottom: 2px solid #2c3e50; padding: 5px; margin-bottom: 5px; }
+            .tb-header { border-bottom: 3px solid #2c3e50; padding: 6px; margin-bottom: 5px; background: #f8f9fa; }
             .tb-name { color: #2c3e50; }
-            .tb-body { padding: 0 5px; }
+            .tb-body { padding: 0 8px; }
 
             /* 2. Modern Minimal Specifics */
             .tm-box { padding: 10px; text-align: center; }
-            .tm-name { font-family: serif; font-size: 10px; }
-            .tm-line { border-bottom: 1px solid #000; margin: 5px 30%; }
-            .tm-body { text-align: left; margin-top: 5px; }
+            .tm-name { font-family: serif; font-size: 11px; }
+            .tm-line { border-bottom: 1px solid #333; margin: 6px 30%; }
+            .tm-body { text-align: left; margin-top: 8px; padding: 0 5px; }
 
             /* 3. Green Sidebar Specifics */
             .tg-container { display: flex; height: 100%; }
-            .tg-left { width: 30%; background: #27ae60; padding: 5px; color: white; }
-            .tg-right { width: 70%; padding: 5px; }
-            .tg-white-text { color: white; font-size: 4px; }
+            .tg-left { width: 32%; background: #27ae60; padding: 6px; color: white; }
+            .tg-right { width: 68%; padding: 6px; }
+            .tg-white-text { color: white; font-size: 5px; opacity: 0.9; margin-bottom: 4px;}
             
             /* 4. Bold Red Specifics */
-            .tr-header { background: #c0392b; color: white; padding: 8px; }
-            .tr-body { padding: 5px; }
-            .tr-pill { display: inline-block; background: #eee; padding: 1px 3px; border-radius: 2px; font-size: 3px; }
-
+            .tr-header { background: #c0392b; color: white; padding: 10px; }
+            .tr-body { padding: 8px; }
+            
             /* 5. Creative Purple Specifics */
             .tp-container { display: flex; height: 100%; }
-            .tp-left { width: 65%; padding: 5px; }
-            .tp-right { width: 35%; background: #f4ecf7; border-left: 3px solid #8e44ad; padding: 5px; }
+            .tp-left { width: 65%; padding: 8px; }
+            .tp-right { width: 35%; background: #f4ecf7; border-left: 3px solid #8e44ad; padding: 8px; }
             .tp-name { color: #8e44ad; }
         </style>
         """, unsafe_allow_html=True)
@@ -160,39 +161,41 @@ elif st.session_state.step == 3:
         st.markdown("""
         <div class="thumb-box">
             <div class="tb-header">
-                <div class="t-name tb-name">JOHN DOE</div>
-                <div class="t-role">Project Manager</div>
+                <div class="t-name tb-name">VIKRAM MALHOTRA</div>
+                <div class="t-role">Senior Software Engineer</div>
             </div>
             <div class="tb-body">
-                <div class="t-head" style="color:#2c3e50">SUMMARY</div>
-                <div class="t-text">Experienced manager with 10+ years in IT sector...</div>
+                <div class="t-head" style="color:#2c3e50">PROFESSIONAL SUMMARY</div>
+                <div class="t-text">Results-oriented professional with 8+ years of experience in software development and team leadership. Proven track record of delivering scalable solutions.</div>
                 <div class="t-head" style="color:#2c3e50">EXPERIENCE</div>
-                <div class="t-text"><b>Infosys</b> - Senior Manager<br>Led team of 20 people...</div>
+                <div class="t-text"><b>Infosys Ltd, Bangalore</b> - Team Lead (2018-Present)<br>• Led a team of 15 developers for a fintech project.<br>• Optimized database queries reducing load time by 40%.</div>
+                <div class="t-text"><b>TCS, Mumbai</b> - Developer (2015-2018)<br>• Developed REST APIs for banking modules.<br>• Collaborated with cross-functional teams.</div>
             </div>
         </div>
         """, unsafe_allow_html=True)
         if st.button("Select Classic Blue", key="btn1", use_container_width=True):
             st.session_state.selected_template = "Classic Blue"
-
         st.write("---")
 
         # --- THUMBNAIL 2: MODERN MINIMAL ---
         st.markdown("""
         <div class="thumb-box tm-box">
-            <div class="t-name tm-name">JOHN DOE</div>
-            <div class="t-role">Project Manager</div>
+            <div class="t-name tm-name">ADITI SHARMA</div>
+            <div class="t-role">Digital Marketing Specialist</div>
             <div class="tm-line"></div>
             <div class="tm-body">
                 <div class="t-head">PROFILE</div>
-                <div class="t-text">Detailed oriented professional...</div>
+                <div class="t-text">Creative marketer with expertise in SEO, SEM, and Social Media strategies. Skilled in driving brand awareness and high ROI campaigns.</div>
                 <div class="t-head">WORK HISTORY</div>
-                <div class="t-text"><b>TCS</b> (2020-Present)<br>Managed cloud migration projects.</div>
+                <div class="t-text"><b>Zomato</b> (2020-Present) - Marketing Manager<br>Increased organic traffic by 150% in 2 years.</div>
+                <div class="t-text"><b>Swiggy</b> (2018-2020) - SEO Analyst<br>Managed monthly ad budget of ₹5 Lakhs.</div>
+                <div class="t-head">SKILLS</div>
+                <div class="t-text">Google Analytics, SEO, Content Strategy, PPC</div>
             </div>
         </div>
         """, unsafe_allow_html=True)
         if st.button("Select Modern Minimal", key="btn2", use_container_width=True):
             st.session_state.selected_template = "Modern Minimal"
-
         st.write("---")
 
         # --- THUMBNAIL 3: GREEN SIDEBAR ---
@@ -200,47 +203,47 @@ elif st.session_state.step == 3:
         <div class="thumb-box">
             <div class="tg-container">
                 <div class="tg-left">
-                    <div style="font-weight:bold; font-size:5px; margin-bottom:5px;">CONTACT</div>
-                    <div class="tg-white-text">Phone<br>Email<br>City</div>
-                    <div style="font-weight:bold; font-size:5px; margin-top:10px;">SKILLS</div>
-                    <div class="tg-white-text">- Python<br>- Agile</div>
+                    <div style="font-weight:bold; font-size:6px; margin-bottom:5px;">CONTACT</div>
+                    <div class="tg-white-text">+91 98765 43210<br>rahul.verma@email.com<br>Pune, Maharashtra</div>
+                    <div style="font-weight:bold; font-size:6px; margin-top:10px;">SKILLS</div>
+                    <div class="tg-white-text">• Python Programming<br>• Data Analysis<br>• Machine Learning<br>• SQL & NoSQL</div>
+                    <div style="font-weight:bold; font-size:6px; margin-top:10px;">LANGUAGES</div>
+                    <div class="tg-white-text">English, Hindi, Marathi</div>
                 </div>
                 <div class="tg-right">
-                    <div class="t-name" style="color:#27ae60; font-size:10px;">JOHN DOE</div>
-                    <div class="t-role">Manager</div>
+                    <div class="t-name" style="color:#27ae60; font-size:11px;">RAHUL VERMA</div>
+                    <div class="t-role">Data Scientist</div>
                     <div class="t-head">SUMMARY</div>
-                    <div class="t-text">Passionate leader...</div>
+                    <div class="t-text">Data Scientist with 5 years of experience in predictive modeling and data mining. Passionate about solving complex business problems using AI.</div>
                     <div class="t-head">EXPERIENCE</div>
-                    <div class="t-text"><b>Wipro</b><br>Delivered high value...</div>
+                    <div class="t-text"><b>Wipro Technologies</b><br>Senior Analyst | 2019 - Present<br>• Built recommendation engines for retail clients.<br>• Automated reporting dashboards using PowerBI.</div>
                 </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
         if st.button("Select Green Sidebar", key="btn3", use_container_width=True):
             st.session_state.selected_template = "Green Sidebar"
-
         st.write("---")
 
         # --- THUMBNAIL 4: BOLD RED ---
         st.markdown("""
         <div class="thumb-box">
             <div class="tr-header">
-                <div class="t-name" style="color:white;">JOHN DOE</div>
-                <div class="t-role" style="color:white; opacity:0.8;">Project Manager</div>
+                <div class="t-name" style="color:white; font-size:12px;">ANJALI KAPOOR</div>
+                <div class="t-role" style="color:white; opacity:0.9;">HR Manager</div>
             </div>
             <div class="tr-body">
-                <div class="t-head" style="color:#c0392b">SUMMARY</div>
-                <div class="t-text">Strategic planner...</div>
+                <div class="t-head" style="color:#c0392b">PROFESSIONAL SUMMARY</div>
+                <div class="t-text">Dedicated HR professional with strong background in talent acquisition, employee relations, and policy formulation.</div>
                 <div class="t-head" style="color:#c0392b">EXPERIENCE</div>
-                <div class="t-text"><b>HCL Tech</b><br>Team Lead for 5 years.</div>
-                <div class="t-head" style="color:#c0392b">SKILLS</div>
-                <span class="tr-pill">JIRA</span> <span class="tr-pill">Scrum</span>
+                <div class="t-text"><b>HCL Technologies</b> - HR Business Partner<br>2017 - Present | Noida, India<br>• Managed recruitment for 500+ technical roles.<br>• Implemented new employee engagement programs.</div>
+                <div class="t-head" style="color:#c0392b">CORE COMPETENCIES</div>
+                <span class="t-pill">Recruitment</span> <span class="t-pill">Payroll</span> <span class="t-pill">Conflict Resolution</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
         if st.button("Select Bold Red", key="btn4", use_container_width=True):
             st.session_state.selected_template = "Bold Red"
-
         st.write("---")
 
         # --- THUMBNAIL 5: CREATIVE PURPLE ---
@@ -248,16 +251,19 @@ elif st.session_state.step == 3:
         <div class="thumb-box">
             <div class="tp-container">
                 <div class="tp-left">
-                    <div class="t-name tp-name">JOHN DOE</div>
-                    <div class="t-role">Manager</div>
+                    <div class="t-name tp-name">KARTIK REDDY</div>
+                    <div class="t-role">UX/UI Designer</div>
                     <div class="t-head" style="background:#8e44ad; color:white; padding:1px 3px; display:inline-block;">EXPERIENCE</div>
-                    <div class="t-text" style="margin-top:2px;"><b>IBM</b><br>Senior Analyst.</div>
+                    <div class="t-text" style="margin-top:2px;"><b>Flipkart</b> - Product Designer<br>2020 - Present<br>• Redesigned the checkout flow increasing conversion by 12%.<br>• Created design systems for mobile app.</div>
+                    <div class="t-text"><b>Myntra</b> - UI Designer<br>2018 - 2020<br>• Designed marketing banners and landing pages.</div>
                 </div>
                 <div class="tp-right">
                     <div class="t-head">CONTACT</div>
-                    <div class="t-text">Email<br>Phone</div>
+                    <div class="t-text">kartik.r@email.com<br>+91 99887 76655<br>Hyderabad</div>
                     <div class="t-head">EDUCATION</div>
-                    <div class="t-text">MBA - 2015</div>
+                    <div class="t-text"><b>B.Des in Interaction Design</b><br>NID, Ahmedabad (2018)</div>
+                    <div class="t-head">TOOLS</div>
+                    <div class="t-text">Figma, Adobe XD, Sketch</div>
                 </div>
             </div>
         </div>
@@ -265,6 +271,7 @@ elif st.session_state.step == 3:
         if st.button("Select Creative Purple", key="btn5", use_container_width=True):
             st.session_state.selected_template = "Creative Purple"
             
+        st.divider()
         if st.button("⬅️ Edit Data", key="back_btn"):
             st.session_state.step = 2
             st.rerun()
@@ -291,6 +298,7 @@ elif st.session_state.step == 3:
             mime="application/pdf",
             type="primary"
         )
+# --- FILE ENDS HERE (Make sure to delete any duplicate code below this line) ---
 
         
         # Get Template String
