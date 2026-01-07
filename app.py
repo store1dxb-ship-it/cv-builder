@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 from weasyprint import HTML
 from jinja2 import Template
-import templates  # Importing your templates.py file
+import templates  # Ensure templates.py exists in the same folder
 
 # ==========================================
 # 1. AI CONFIGURATION
@@ -85,7 +85,7 @@ elif st.session_state.step == 2:
             st.session_state.step = 3
             st.rerun()
 
-# --- STEP 3: TEMPLATE SELECTION (BUTTON VERSION) ---
+# --- STEP 3: TEMPLATE SELECTION (STABLE VERSION) ---
 elif st.session_state.step == 3:
     st.header("🏆 Step 3: Choose Your Professional Template")
     
@@ -153,5 +153,25 @@ elif st.session_state.step == 3:
         # --- GENERATE PREVIEW ---
         html_template_string = templates.all_templates[st.session_state.selected_template]
         jinja_template = Template(html_template_string)
-        filled_html = jinja_template.render(**st.session_state.
-                                            
+        
+        # Filling data safely
+        filled_html = jinja_template.render(**st.session_state.user_data)
+        
+        # Force White Background code
+        preview_html = f"<style>body {{ background-color: white !important; }}</style>{filled_html}"
+        
+        # Display
+        st.components.v1.html(preview_html, height=800, scrolling=True)
+        
+        # --- DOWNLOAD BUTTON ---
+        # Generate PDF Bytes
+        pdf_bytes = HTML(string=filled_html).write_pdf()
+        
+        st.download_button(
+            label=f"⬇️ Download {st.session_state.selected_template} PDF",
+            data=pdf_bytes,
+            file_name=f"{st.session_state.user_data.get('name', 'Resume')}.pdf",
+            mime="application/pdf",
+            type="primary"
+        )
+        
