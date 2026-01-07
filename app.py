@@ -2,7 +2,6 @@ import streamlit as st
 import requests
 from weasyprint import HTML
 from jinja2 import Template
-from st_click_detector import click_detector
 import templates  # Importing your templates.py file
 
 # ==========================================
@@ -31,7 +30,6 @@ def get_ai_suggestions(role, info_type):
 # ==========================================
 st.set_page_config(page_title="AI Resume Pro", page_icon="📝", layout="wide")
 
-# Session State Initialization
 if 'step' not in st.session_state: st.session_state.step = 1
 if 'user_data' not in st.session_state: st.session_state.user_data = {}
 if 'selected_template' not in st.session_state: st.session_state.selected_template = "Classic Blue"
@@ -87,7 +85,7 @@ elif st.session_state.step == 2:
             st.session_state.step = 3
             st.rerun()
 
-# --- STEP 3: TEMPLATE SELECTION ---
+# --- STEP 3: TEMPLATE SELECTION (BUTTON VERSION) ---
 elif st.session_state.step == 3:
     st.header("🏆 Step 3: Choose Your Professional Template")
     
@@ -95,92 +93,54 @@ elif st.session_state.step == 3:
     
     with col_left:
         st.subheader("🎨 Select Design")
-        st.caption("Click directly on a template below to select it.")
         
-        # --- CSS STYLES (Fixed for Visibility) ---
-        css_content = """
+        # --- CSS Styles ---
+        st.markdown("""
+        <style>
             .thumb-box {
-                width: 100%; 
-                min-height: 160px; 
-                border: 1px solid #ccc;
-                border-radius: 8px; 
-                margin-bottom: 15px; 
-                background-color: white !important; /* Force white background */
-                overflow: hidden; 
-                cursor: pointer; 
-                position: relative;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-                transition: transform 0.2s;
+                width: 100%; min-height: 150px; border: 1px solid #ccc;
+                border-radius: 5px; margin-bottom: 5px; background: white;
+                padding: 0; overflow: hidden;
             }
-            .thumb-box:hover { transform: scale(1.02); border-color: #007bff; }
+            .t-name { font-weight: bold; font-size: 10px; color: black; margin: 5px; }
+            .t-text { font-size: 6px; color: #555; margin: 5px; line-height: 1.2; }
+            /* Specifics */
+            .tb-head { background: #f8f9fa; border-bottom: 3px solid #2c3e50; padding: 5px; }
+            .tg-left { background: #27ae60; width: 30%; height: 150px; float: left; }
+            .tr-head { background: #c0392b; color: white; padding: 10px; }
+            .tp-right { border-left: 3px solid #8e44ad; background: #f4ecf7; height: 150px; width: 35%; float: right; }
+        </style>
+        """, unsafe_allow_html=True)
+
+        # 1. Classic Blue
+        st.markdown('<div class="thumb-box"><div class="tb-head"><div class="t-name" style="color:#2c3e50">VIKRAM MALHOTRA</div></div><div class="t-text">Senior Engineer<br><br><b>SUMMARY</b><br>Experienced professional...</div></div>', unsafe_allow_html=True)
+        if st.button("Select Classic Blue", use_container_width=True):
+            st.session_state.selected_template = "Classic Blue"
+        st.write("---")
+
+        # 2. Modern Minimal
+        st.markdown('<div class="thumb-box" style="text-align:center; padding-top:10px;"><div class="t-name" style="font-family:serif">ADITI SHARMA</div><hr style="margin:5px 30%"><div class="t-text" style="text-align:left; padding-left:10px">Digital Marketing<br><br><b>PROFILE</b><br>Creative marketer...</div></div>', unsafe_allow_html=True)
+        if st.button("Select Modern Minimal", use_container_width=True):
+            st.session_state.selected_template = "Modern Minimal"
+        st.write("---")
+
+        # 3. Green Sidebar
+        st.markdown('<div class="thumb-box"><div class="tg-left"></div><div style="margin-left:32%; padding:5px;"><div class="t-name" style="color:#27ae60">RAHUL VERMA</div><div class="t-text">Data Scientist...</div></div></div>', unsafe_allow_html=True)
+        if st.button("Select Green Sidebar", use_container_width=True):
+            st.session_state.selected_template = "Green Sidebar"
+        st.write("---")
+
+        # 4. Bold Red
+        st.markdown('<div class="thumb-box"><div class="tr-head"><div class="t-name" style="color:white">ANJALI KAPOOR</div></div><div class="t-text">HR Professional...</div></div>', unsafe_allow_html=True)
+        if st.button("Select Bold Red", use_container_width=True):
+            st.session_state.selected_template = "Bold Red"
+        st.write("---")
+
+        # 5. Creative Purple
+        st.markdown('<div class="thumb-box"><div class="tp-right"></div><div style="padding:10px;"><div class="t-name" style="color:#8e44ad">KARTIK REDDY</div><div class="t-text">UX Designer...</div></div></div>', unsafe_allow_html=True)
+        if st.button("Select Creative Purple", use_container_width=True):
+            st.session_state.selected_template = "Creative Purple"
             
-            /* Selected State */
-            .selected-img { border: 4px solid #007bff !important; transform: scale(1.02); }
-            
-            /* Text Handling */
-            .t-name { font-weight: bold; font-size: 11px; margin-bottom: 3px; color: #000 !important; }
-            .t-role { font-size: 9px; color: #555 !important; margin-bottom: 5px; }
-            .t-text { font-size: 7px; color: #444 !important; line-height: 1.3; margin-bottom: 4px; }
-            .t-head { font-weight: bold; font-size: 8px; margin-top: 6px; margin-bottom: 3px; text-transform: uppercase; color: #000 !important; }
-            
-            /* Template Specifics */
-            .tb-header { border-bottom: 3px solid #2c3e50; padding: 8px; background: #f8f9fa; }
-            .tm-box { padding: 12px; text-align: center; } 
-            .tm-line { border-bottom: 1px solid #333; margin: 6px 30%; }
-            .tg-container { display: flex; height: 100%; min-height: 160px; } 
-            .tg-left { width: 32%; background: #27ae60; padding: 8px; color: white !important; } 
-            .tg-right { width: 68%; padding: 8px; }
-            .tr-header { background: #c0392b; color: white !important; padding: 12px; }
-            .tp-container { display: flex; height: 100%; min-height: 160px; } 
-            .tp-left { width: 65%; padding: 10px; } 
-            .tp-right { width: 35%; background: #f4ecf7; border-left: 3px solid #8e44ad; padding: 10px; }
-        """
-
-        # --- HTML CONTENT ---
-        sel = st.session_state.selected_template
-        def get_class(name):
-            return "thumb-box selected-img" if sel == name else "thumb-box"
-
-        html_code = f"""
-        <div id='Classic Blue' class='{get_class("Classic Blue")}'>
-            <div class='tb-header'><div class='t-name' style='color:#2c3e50 !important'>VIKRAM MALHOTRA</div><div class='t-role'>Senior Engineer</div></div>
-            <div style='padding:8px'><div class='t-head' style='color:#2c3e50 !important'>SUMMARY</div><div class='t-text'>Results-oriented professional with experience in software...</div></div>
-        </div>
-
-        <div id='Modern Minimal' class='{get_class("Modern Minimal")}'>
-            <div class='tm-box'>
-                <div class='t-name' style='font-family:serif; font-size:12px;'>ADITI SHARMA</div><div class='t-role'>Digital Marketing</div>
-                <div class='tm-line'></div><div style='text-align:left; margin-top:8px;'><div class='t-head'>PROFILE</div><div class='t-text'>Creative marketer with expertise in SEO...</div></div>
-            </div>
-        </div>
-
-        <div id='Green Sidebar' class='{get_class("Green Sidebar")}'>
-            <div class='tg-container'>
-                <div class='tg-left'><div style='font-size:7px; color:white !important'>Contact<br>Skills</div></div>
-                <div class='tg-right'><div class='t-name' style='color:#27ae60 !important'>RAHUL VERMA</div><div class='t-head'>SUMMARY</div><div class='t-text'>Data Scientist with 5 years experience...</div></div>
-            </div>
-        </div>
-
-        <div id='Bold Red' class='{get_class("Bold Red")}'>
-            <div class='tr-header'><div class='t-name' style='color:white !important'>ANJALI KAPOOR</div></div>
-            <div style='padding:10px'><div class='t-head' style='color:#c0392b !important'>SUMMARY</div><div class='t-text'>HR professional with strong background...</div></div>
-        </div>
-
-        <div id='Creative Purple' class='{get_class("Creative Purple")}'>
-            <div class='tp-container'>
-                <div class='tp-left'><div class='t-name' style='color:#8e44ad !important'>KARTIK REDDY</div><div class='t-head' style='background:#8e44ad; color:white !important;'>EXPERIENCE</div></div>
-                <div class='tp-right'><div class='t-head'>CONTACT</div></div>
-            </div>
-        </div>
-        """
-
-        # --- CLICK DETECTOR (Renders the Thumbnails) ---
-        clicked_id = click_detector(html_code, css_content)
-
-        if clicked_id and clicked_id != st.session_state.selected_template:
-            st.session_state.selected_template = clicked_id
-            st.rerun()
-
         st.divider()
         if st.button("⬅️ Edit Data", key="back_btn"):
             st.session_state.step = 2
@@ -190,23 +150,8 @@ elif st.session_state.step == 3:
         st.success(f"✅ Selected Style: **{st.session_state.selected_template}**")
         st.subheader("Live Preview (Full Size)")
         
-        # Load Template
+        # --- GENERATE PREVIEW ---
         html_template_string = templates.all_templates[st.session_state.selected_template]
         jinja_template = Template(html_template_string)
-        filled_html = jinja_template.render(**st.session_state.user_data)
-        
-        # PREVIEW FIX: Force White Background
-        preview_html = f"<style>body {{ background-color: white !important; }}</style>{filled_html}"
-        st.components.v1.html(preview_html, height=800, scrolling=True)
-        
-        # DOWNLOAD BUTTON
-        pdf_bytes = HTML(string=filled_html).write_pdf()
-        
-        st.download_button(
-            label=f"⬇️ Download {st.session_state.selected_template} PDF",
-            data=pdf_bytes,
-            file_name=f"{st.session_state.user_data.get('name', 'Resume')}.pdf",
-            mime="application/pdf",
-            type="primary"
-        )
-        
+        filled_html = jinja_template.render(**st.session_state.
+                                            
